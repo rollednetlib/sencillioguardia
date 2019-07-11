@@ -73,6 +73,13 @@ func wwwExchange(w http.ResponseWriter, r *http.Request) {
 				Expires: expiration})
 			fmt.Fprintf(w, string(serverPublicKey)+"\n")
 			fmt.Fprintf(w, clientSessionID+"\n")
+//			databaseCreate, err := os.OpenFile("database", os.O_CREATE, 0660)
+			if err != nil {
+				panic(err)
+			}
+			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+			database, err := os.OpenFile("database", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+			database.WriteString(clientSessionID + ":" + ip + "\n")
 		}
 
 	}
@@ -84,12 +91,12 @@ func exchange(w http.ResponseWriter, r *http.Request) {
 		return
 	} */
 	if r.URL.Path == "/clear" {
-		fmt.Fprintf(w, "Clearing cookies")
+		fmt.Fprintf(w, "Eliminar cookies")
 		http.SetCookie(w, &http.Cookie{
 			Name:   "sessionID",
-			Value:  cookie.Value,
+			Value:  "",
 			MaxAge: -1})
-		fmt.Println("Clearing session")
+		fmt.Println("Eliminar session")
 	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	fmt.Println(ip)
