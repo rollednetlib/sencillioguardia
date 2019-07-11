@@ -3,7 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net"
+	"net/http"
+	//	"net/http/cookiejar"
+	"html/template"
 	"os"
 	"strings"
 	"time"
@@ -39,7 +44,67 @@ func genSessionID() string {
 	return sessionString
 }
 
+type cookedPage struct {
+	SessionID     string
+	SessionStatus string
+}
+
+func wwwExchange(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		cookie, _ := r.Cookie("sessionID")
+		if cookie != nil {
+			t, _ := template.ParseFiles("cookedSession.html")
+			p := cookedPage{
+				SessionID:     cookie.Value,
+				SessionStatus: "Pending",
+			}
+			t.Execute(w, p)
+		} else {
+			serverPublicKey, err := ioutil.ReadFile("pub")
+			if err != nil {
+				panic(err)
+			}
+			clientSessionID := genSessionID()
+			expiration := time.Now().Add(28 * 24 * time.Hour)
+			http.SetCookie(w, &http.Cookie{
+				Name:    "sessionID",
+				Value:   clientSessionID,
+				Expires: expiration})
+			fmt.Fprintf(w, string(serverPublicKey)+"\n")
+			fmt.Fprintf(w, clientSessionID+"\n")
+		}
+
+	}
+}
+
+func exchange(w http.ResponseWriter, r *http.Request) {
+	/*	if r.URL.Path != "/" {
+		http.Error(w, "404", http.StatusNotFound)
+		return
+	} */
+	if r.URL.Path == "/clear" {
+		fmt.Fprintf(w, "Clearing cookies")
+		http.SetCookie(w, &http.Cookie{
+			Name:   "sessionID",
+			Value:  cookie.Value,
+			MaxAge: -1})
+		fmt.Println("Clearing session")
+	}
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	fmt.Println(ip)
+	//Sort connections based on bin or web
+	switch r.Header.Get("User-Agent") {
+	case "sencillioguard-0.0.1":
+		//		binExchange(w, r)
+	default:
+		wwwExchange(w, r)
+	}
+}
+
 func main() {
+	http.HandleFunc("/", exchange)
+	http.ListenAndServe("192.168.100.1:8000", nil)
 	clientSession := genSessionID()
 	fmt.Println(clientSession)
 }
