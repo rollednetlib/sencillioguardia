@@ -50,21 +50,29 @@ type cookedPage struct {
 }
 
 func wwwExchange(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		cookie, _ := r.Cookie("sessionID")
-		if cookie != nil {
-			t, _ := template.ParseFiles("cookedSession.html")
-			p := cookedPage{
-				SessionID:     cookie.Value,
-				SessionStatus: "Pending",
-			}
-			t.Execute(w, p)
-		} else {
-			serverPublicKey, err := ioutil.ReadFile("pub")
-			if err != nil {
+	cookie, _ := r.Cookie("sessionID")
+	if cookie != nil {
+		t, _ := template.ParseFiles("cookedSession.html")
+		p := cookedPage{
+			SessionID:     cookie.Value,
+			SessionStatus: "Pending",
+		}
+		t.Execute(w, p)
+	} else {
+		serverPublicKey, err := ioutil.ReadFile("pub")
+		if err != nil {
+			panic(err)
+		}
+		switch r.Method {
+		case "GET":
+			http.ServeFile(w, r, "requestForm.html")
+		case "POST":
+			if err := r.ParseForm(); err != nil {
 				panic(err)
 			}
+			clientPublicKey := r.FormValue("publickey")
+			clientUserName := r.FormValue("username")
+
 			clientSessionID := genSessionID()
 			expiration := time.Now().Add(28 * 24 * time.Hour)
 			http.SetCookie(w, &http.Cookie{
@@ -73,15 +81,17 @@ func wwwExchange(w http.ResponseWriter, r *http.Request) {
 				Expires: expiration})
 			fmt.Fprintf(w, string(serverPublicKey)+"\n")
 			fmt.Fprintf(w, clientSessionID+"\n")
-//			databaseCreate, err := os.OpenFile("database", os.O_CREATE, 0660)
+			//			databaseCreate, err := os.OpenFile("database", os.O_CREATE, 0660)
 			if err != nil {
 				panic(err)
 			}
 			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 			database, err := os.OpenFile("database", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
-			database.WriteString(clientSessionID + ":" + ip + "\n")
+			if err != nil {
+				panic(err)
+			}
+			database.WriteString(clientSessionID + ":" + ip + ":" + clientPublicKey + ":" + clientUserName + ":" + time.Now().String() + "\n")
 		}
-
 	}
 }
 
@@ -91,11 +101,12 @@ func exchange(w http.ResponseWriter, r *http.Request) {
 		return
 	} */
 	if r.URL.Path == "/clear" {
-		fmt.Fprintf(w, "Eliminar cookies")
+		//		fmt.Fprint(w, "Eliminar cookies")
 		http.SetCookie(w, &http.Cookie{
-			Name:   "sessionID",
-			Value:  "",
-			MaxAge: -1})
+			Name:    "sessionID",
+			MaxAge:  -1,
+			Expires: time.Now(),
+		})
 		fmt.Println("Eliminar session")
 	}
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
