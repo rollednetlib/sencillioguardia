@@ -9,11 +9,11 @@ import (
 	"strconv"
 )
 
-var htmlTemplate = `{{range $index, $element := .}}{{$index}}
+/*var htmlTemplate = `{{range $index, $element := .}}{{$index}}
 {{range $element}}{{.}}
 {{end}}
 {{end}}`
-
+*/
 /*
 type mdata struct {
 	sessionID, ipAddress, publicKey, userName string
@@ -49,8 +49,8 @@ func fetchData() map[string]map[string]string {
 }
 
 func adminPage(w http.ResponseWriter, r *http.Request) {
-	t := template.New("t")
-	t, err := t.Parse(htmlTemplate)
+	//t := template.New("t")
+	t, err := template.ParseFiles("adminpage.html")
 	if err != nil {
 		panic(err)
 	}
