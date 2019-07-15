@@ -86,11 +86,11 @@ func wwwExchange(w http.ResponseWriter, r *http.Request) {
 				panic(err)
 			}
 			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-			database, err := os.OpenFile("database", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
+			database, err := os.OpenFile("pendingSessions", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 			if err != nil {
 				panic(err)
 			}
-			database.WriteString(clientSessionID + ":" + ip + ":" + clientPublicKey + ":" + clientUserName + ":" + time.Now().String() + "\n")
+			database.WriteString(clientSessionID + "," + ip + "," + clientPublicKey + "," + clientUserName + ",pending," + time.Now().String() + "\n")
 		}
 	}
 }
@@ -113,7 +113,7 @@ func exchange(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(ip)
 	//Sort connections based on bin or web
 	switch r.Header.Get("User-Agent") {
-	case "sencillioguard-0.0.1":
+	case "sencillioguard-binaryagent-0.0.1":
 		//		binExchange(w, r)
 	default:
 		wwwExchange(w, r)

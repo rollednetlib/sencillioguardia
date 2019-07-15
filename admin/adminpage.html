@@ -79,20 +79,41 @@ footer {
   </nav>
   
   <article>
-    <h1>Pending Sessions</h1>
+    <h1>Sessions</h1>
     <p>Here you can manage user sessions.</p>
     {{range $index, $element := .}}
+    {{ if eq .status "approved" }}
     <h4>Session {{$index}}</h4>
-	    {{range $element}}
-	    <textarea id="data" style="width: 65%; height: 32px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
+    <h4>Approved</h4>
+    
+
+	<textarea id="data" style="width: 76%; height: 20px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
 	<a>IP Address: {{$element.ipAddress}}</a><br>
 	<a>PublicKey: {{$element.publicKey}}</a><br>
 	<a>UserName: {{$element.userName}}</a><br>
 	<br>
 
-    <form action="/approve" method="post"><input type="button" value="submit">Approve</button></form>
-    <form action="/deny" method="post"><input type="button" value="submit">Deny</button></form>
-    <form action="/blacklist" method="post"><input type="button" value="submit">Blacklist</button></form>
+	<form action="/approve/{{$element.sessionID}}" method="get"><button type="button" value="submit">Approve</button></form>
+	<form action="/deny/{{$element.sessionID}}" method="post"><button type="button" value="submit">Deny</button></form>
+	<form action="/blacklist/{{$element.sessionID}}" method="post"><button type="button" value="submit">Blacklist</button></form>
+    <br>
+    {{end}}
+    {{end}}
+
+    {{range $index, $element := .}}
+    {{ if eq .status "pending" }}
+    <h4>Session {{$index}}</h4>
+    <h5>Pending</h5>
+
+	<textarea id="data" style="width: 76%; height: 20px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
+	<a>IP Address: {{$element.ipAddress}}</a><br>
+	<a>PublicKey: {{$element.publicKey}}</a><br>
+	<a>UserName: {{$element.userName}}</a><br>
+	<br>
+
+	<form action="/approve/{{$element.sessionID}}" method="get"><button type="button" value="submit">Approve</button></form>
+	<form action="/deny/{{$element.sessionID}}" method="post"><button type="button" value="submit">Deny</button></form>
+	<form action="/blacklist/{{$element.sessionID}}" method="post"><button type="button" value="submit">Blacklist</button></form>
     <br>
     {{end}}
     {{end}}

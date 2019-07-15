@@ -42,6 +42,7 @@ func fetchData() map[string]map[string]string {
 		data[c]["ipAddress"] = line[1]
 		data[c]["publicKey"] = line[2]
 		data[c]["userName"] = line[3]
+		data[c]["status"] = line[4]
 		fmt.Println(c)
 	}
 	fmt.Println(data)
