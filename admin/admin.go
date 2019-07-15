@@ -1,55 +1,68 @@
 package main
 
 import (
-	//"bufio"
 	"encoding/csv"
 	"fmt"
 	"html/template"
-	"io"
-	"log"
-	"net"
 	"net/http"
 	"os"
+	"strconv"
 )
 
-func dataFetch() []string {
-	// Open the file
-	csvfile, err := os.Open("pendingSessions")
+var htmlTemplate = `{{range $index, $element := .}}{{$index}}
+{{range $element}}{{.}}
+{{end}}
+{{end}}`
+
+/*
+type mdata struct {
+	sessionID, ipAddress, publicKey, userName string
+}
+
+type sdata struct {
+	session  string
+	metadata []mdata
+}
+*/
+
+func fetchData() map[string]map[string]string {
+	f, err := os.Open("pendingSessions")
 	if err != nil {
-		log.Fatalln("Couldn't open the csv file", err)
+		panic(err)
 	}
+	defer f.Close()
 
-	// Parse the file
-	r := csv.NewReader(csvfile)
-	//r := csv.NewReader(bufio.NewReader(csvfile))
-	dataArray := []string{}
+	lines, err := csv.NewReader(f).ReadAll()
 
-	// Iterate through the records
-	for {
-		// Read each record from csv
-		sessionData, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		data := fmt.Sprintf("SessionID: \t%s\nIP Address: \t%s\nPublickey: \t%s\nUserName: \t%s\n", sessionData[0], sessionData[1], sessionData[2], sessionData[3])
-		dataArray = append(dataArray, data)
+	var data = map[string]map[string]string{}
+	for x, line := range lines {
+		c := strconv.Itoa(x)
+		data[c] = map[string]string{}
+		data[c]["sessionID"] = line[0]
+		data[c]["ipAddress"] = line[1]
+		data[c]["publicKey"] = line[2]
+		data[c]["userName"] = line[3]
+		fmt.Println(c)
 	}
-	return dataArray
+	fmt.Println(data)
+	return data
 }
 
 func adminPage(w http.ResponseWriter, r *http.Request) {
-	parsedData := dataFetch
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	fmt.Println("Admin page accessed from: " + ip)
-	tpl := template.Must(template.ParseGlob("admin.html"))
-	tpl.Execute(w, parsedData)
+	t := template.New("t")
+	t, err := t.Parse(htmlTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(fetchData())
+	err = t.Execute(w, fetchData())
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
 	http.HandleFunc("/", adminPage)
-	http.ListenAndServe("192.168.100.1:8001", nil)
+	http.ListenAndServe("192.168.100.1:8003", nil)
 }
