@@ -1,0 +1,156 @@
+<html lang="en">
+<head>
+	<title>Sencillio Guard Admin Page</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+  background-color: #666;
+  padding: 30px;
+  text-align: center;
+  font-size: 35px;
+  color: white;
+}
+
+nav {
+  float: left;
+  width: 250px;
+  background: #ccc;
+  padding: 20px;
+}
+
+/* Style the list inside the menu */
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+article {
+  float: left;
+  padding: 20px;
+  width: 80%;
+  background-color: #f1f1f1;
+}
+
+/* Clear floats after the columns */
+section:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Style the footer */
+footer {
+  background-color: #777;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  nav, article {
+    width: 100%;
+    height: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h2>Admin Page</h2>
+</header>
+
+<section>
+  <nav>
+    <ul>
+      <li><a href="#">User Management</a></li>
+      <li><a href="#">Configuration</a></li>
+      <li><a href="#">User Manual</a></li>
+    </ul>
+  </nav>
+  
+  <article>
+    <h1>Sessions</h1>
+    <p>Here you can manage user sessions.</p>
+    <p>Approved: 	These user sessions are approved to access the VPN Network.</p>
+    <p>Pending:	 	These user sessions are awaiting approval to acces the VPN Network.</p>
+    <p>Blacklisted:	These IP Address, usernames, and publickeys are blacklisted from</p>
+    <p>			joining or requesting access to the network.</p>
+    <br>
+    <h3>[]===================APPROVED=====================[]</h3>
+    {{range $index, $element := .}}
+    {{ if eq .status "approved" }}
+    <h4>Session {{$index}}</h4>
+    <h4>Approved</h4>
+    
+
+	<textarea id="data" style="width: 76%; height: 20px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
+	<a>IP Address: {{$element.ipAddress}}</a><br>
+	<a>PublicKey: {{$element.publicKey}}</a><br>
+	<a>UserName: {{$element.userName}}</a><br>
+	<br>
+
+	<form action="/approve/{{$element.sessionID}}" method="get"><button type="button" value="submit">Approve</button></form>
+	<form action="/deny/{{$element.sessionID}}" method="post"><button type="button" value="submit">Deny</button></form>
+	<form action="/blacklist/{{$element.sessionID}}" method="post"><button type="button" value="submit">Blacklist</button></form>
+    <br>
+    {{end}}
+    {{end}}
+
+    <h3>[]===================PENDING=====================[]</h3>
+    {{range $index, $element := .}}
+    {{ if eq .status "pending" }}
+    <h4>Session {{$index}}</h4>
+    <h5>Pending</h5>
+
+	<textarea id="data" style="width: 76%; height: 20px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
+	<a>IP Address: {{$element.ipAddress}}</a><br>
+	<a>PublicKey: {{$element.publicKey}}</a><br>
+	<a>UserName: {{$element.userName}}</a><br>
+	<br>
+
+	<form action="/approve/{{$element.sessionID}}" method="get"><button type="button" value="submit">Approve</button></form>
+	<form action="/deny/{{$element.sessionID}}" method="post"><button type="button" value="submit">Deny</button></form>
+	<form action="/blacklist/{{$element.sessionID}}" method="post"><button type="button" value="submit">Blacklist</button></form>
+    <br>
+    {{end}}
+    {{end}}
+
+    <h3>[]===================BLACKLISTED=====================[]</h3>
+    {{range $index, $element := .}}
+    {{ if eq .status "blacklisted" }}
+    <h4>Session {{$index}}</h4>
+    <h5>Pending</h5>
+
+	<textarea id="data" style="width: 76%; height: 20px" rows="2" cols="80">{{$element.sessionID}}</textarea><br>
+	<a>IP Address: {{$element.ipAddress}}</a><br>
+	<a>PublicKey: {{$element.publicKey}}</a><br>
+	<a>UserName: {{$element.userName}}</a><br>
+	<br>
+
+	<form action="/approve/{{$element.sessionID}}" method="get"><button type="button" value="submit">Approve</button></form>
+	<form action="/deny/{{$element.sessionID}}" method="post"><button type="button" value="submit">Deny</button></form>
+	<form action="/blacklist/{{$element.sessionID}}" method="post"><button type="button" value="submit">Blacklist</button></form>
+    <br>
+    {{end}}
+    {{end}}
+
+
+  </article>
+</section>
+
+<footer>
+  <p>Footer</p>
+</footer>
+
+</body>
+</html>
