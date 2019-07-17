@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -61,10 +61,10 @@ func wwwExchange(w http.ResponseWriter, r *http.Request) {
 		}
 		t.Execute(w, p)
 	} else {
-		serverPublicKey, err := ioutil.ReadFile("pub")
-		if err != nil {
-			panic(err)
-		}
+		serverPublicKey, _, _, _ := readConfig()
+//		if err != nil {
+//			panic(err)
+//		}
 		switch r.Method {
 		case "GET":
 			http.ServeFile(w, r, "requestForm.html")
@@ -84,9 +84,9 @@ func wwwExchange(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, string(serverPublicKey)+"\n")
 			fmt.Fprintf(w, clientSessionID+"\n")
 			//			databaseCreate, err := os.OpenFile("database", os.O_CREATE, 0660)
-			if err != nil {
-				panic(err)
-			}
+//			if err != nil {
+//				panic(err)
+//			}
 			ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 			database, err := os.OpenFile("pendingSessions", os.O_RDWR|os.O_APPEND|os.O_CREATE, 0660)
 			if err != nil {
