@@ -190,21 +190,55 @@ func main() {
 }
 */
 
+func readConfig() (string, string, string, string) {
+	f, err := os.Open("sg.conf")
+	if err != nil {
+		panic(err)
+	}
+
+	defer f.Close()
+
+	lines, err := csv.NewReader(f).ReadAll()
+
+	var publicKey string
+	var privateKey string
+	var publicBind string
+	var adminBind string
+	for _, each := range lines {
+		if each[0] == "publicKey" {
+			publicKey = each[1]
+		}
+		if each[0] == "privateKey" {
+			privateKey = each[1]
+		}
+		if each[0] == "publicBind" {
+			publicBind = each[1]
+		}
+		if each[0] == "adminBind" {
+			adminBind = each[1]
+		}
+	}
+	return publicKey, privateKey, publicBind, adminBind
+}
+
 func main() {
+
+	publicKey, _, publicBind, adminBind := readConfig()
 	finish := make(chan bool)
 
-	server8000 := http.NewServeMux()
-	server8000.HandleFunc("/", exchange)
+	fmt.Println("publicKey: " + publicKey)
+	serverPub := http.NewServeMux()
+	serverPub.HandleFunc("/", exchange)
 
-	server8002 := http.NewServeMux()
-	server8002.HandleFunc("/", adminPage)
+	serverAdmin := http.NewServeMux()
+	serverAdmin.HandleFunc("/", adminPage)
 
 	go func() {
-		http.ListenAndServe("192.168.100.1:8000", server8000)
+		http.ListenAndServe(publicBind, serverPub)
 	}()
 
 	go func() {
-		http.ListenAndServe("192.168.100.1:8002", server8002)
+		http.ListenAndServe(adminBind, serverAdmin)
 	}()
 
 	<-finish
